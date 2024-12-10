@@ -1,0 +1,483 @@
+---
+title: "Assignement 2"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+  pdf_document: default
+date: "2024-01-10"
+---
+
+## Introduction :
+
+This assignment consists of performing data cleaning and manipulation, and then some statistical analysis. 
+
+## Dataset:
+
+The dataset is retrieved from [Rwanda DHS (Demographic and Health Survey)](https://dhsprogram.com/Data/) 2020. The type of dataset used here is Household member. You will get data in two files: main SPSS File and Map File (for descriptions). 
+
+Your Assignments steps:
+
+1. Read the dataset in R.
+
+```{r echo=TRUE}
+# required package
+# install.packages("haven")
+library(haven)
+
+# import data
+Dhs_data<-read_sav("C:/Users/RPHC5/Downloads/Assignment 2_files/DHS2020/RWPR81FL.SAV")
+
+```
+
+- Visualize, inspect and get familiar with the data
+```{r echo=FALSE}
+# your code here
+dim(Dhs_data)
+```
+
+
+2. Select only few columns, important in this Assignments. They are the following: "HV001", "HV009", "HV010", "HV011", "HV014", "SHDISTRICT", "HV024", "HV025", "HV040", "HV227", "HV228", "HV270", "HV105", "HV106", "HML3", "HML4", "HML7",
+  "HML10", "HML22", "HML32","HML33", "HML35"
+
+```{r echo=FALSE}
+# your code here
+Dhs_data1 <- data.frame(Dhs_data$HV001, Dhs_data$HV009, Dhs_data$HV010, Dhs_data$HV011, Dhs_data$HV014, Dhs_data$SHDISTRICT, Dhs_data$HV024, Dhs_data$HV025, Dhs_data$HV040, Dhs_data$HV227, Dhs_data$HV228, Dhs_data$HV270, Dhs_data$HV105, Dhs_data$HV106, Dhs_data$HML3, Dhs_data$HML4, Dhs_data$HML7, Dhs_data$HML10, Dhs_data$HML22, Dhs_data$HML32, Dhs_data$HML33, Dhs_data$HML35)
+
+```
+
+  
+3. Rename variables using the variable descriptions below. Give meaningful (short) name to the variables of your choice.
+
+>* HV001= "Cluster number", Cl_NUMBER
+>* HV009 = "Number of household members", N-HHD
+>* HV010 = "Number of eligible women in household",
+>* HV011 = "Number of eligible men in household",
+>* HV014 = "Number of children 5 and under (de jure)",
+>* SHDISTRICT = "District (geographic area)",
+>* HV024 = "Region (provinces, corresponding values in a map file)",
+>* HV025 = "Type of place of residence (rural versus urban)",
+>* HV040 = "Cluster altitude in meters",
+>* HV227 = "Presence of mosquito bed net for sleeping",
+>* HV228 = "Number of children under 5 who slept under a mosquito bed net",
+>* HV270 = "Wealth index combined (an index based on various household assets indicating socio-economic status)",
+>* HV105 = "Age of household members",
+>* HV106 = "Highest educational level attained by individuals",
+>* HML3 = "Net observed by interviewer",
+>* HML4 = "Months ago the net was obtained",
+>* HML7 = "Brand of net",
+>* HML10 = "Insecticide-Treated Net (ITN)",
+>* HML22 = "Obtained net from campaign, antenatal, or immunization visit",
+>* HML33= "Result of malaria measurement", 
+>* HML32 = "Final result of malaria from blood smear test",
+>* HML35 = "Result of malaria rapid test"
+
+```{r echo=FALSE}
+colnames(Dhs_data1) <- c("Cl_NUMBER", "N-HHD", "N_El_Women", "N_El_Men", "N_Child_5","District",
+"Region", "Type_Residence", "Cl_Altitude_ M", "Pre_mosquito_net", "N_Child_U_5", "W_Index", "Age", "Educ_level","Net_observed", "Months_Ago", "Brand_net", "Ins_Treat_N", "Ob_net_Antenatal", "Blood_smear_test", "Malaria_measurement", "Malaria _rapid_test")
+```
+
+
+## Data cleaning
+
+1. Inspect each variables, decode variable to its original unique variables. 
+Example, Variable "HV024"(Region) has Unique values 1,2,3,4,5. Decode it to orginal Region Kigali, South, West, North, East
+Use Map file to see the description of each values in data. 
+
+```{r echo=FALSE}
+# your code
+#install.packages("tidyverse")
+library("tidyverse")
+all_columns <-c("Cl_NUMBER", "N-HHD", "N_El_Women", "N_El_Men", "N_Child_5","District",
+"Region", "Type_Residence", "Cl_Altitude_ M", "Pre_mosquito_net", "N_Child_U_5", "W_Index", "Age", "Educ_level","Net_observed", "Months_Ago", "Brand_net", "Ins_Treat_N", "Ob_net_Antenatal", "Blood_smear_test", "Malaria_measurement", "Malaria _rapid_test")
+Dhs_data1[all_columns] <- sapply(Dhs_data1[all_columns], as_factor)
+
+
+```
+(Work process in attached RMD file)
+
+
+2. Handling Missing Values:
+
+Determine columns with missing values. Devise the strategy to handle missing values: Deleting missing values, replacing missing values with mean or mode.
+```{r echo=FALSE}
+# Check for missing values in the entire dataset
+missing_values <- colSums(is.na(Dhs_data1))
+
+# View columns with missing values
+missing_values[missing_values > 0]
+
+mode <- function(x) names(sort(table(x), decreasing = TRUE))[1]
+Dhs_data1$N_Child_U_5[is.na(Dhs_data1$N_Child_U_5)] <- mode(Dhs_data1$N_Child_U_5)
+
+mode <- function(x)names(sort(table(x), decreasing = TRUE))[1] 
+Dhs_data1$Mal_Res_Rapid[is.na(Dhs_data1$Mal_Res_Rapid)] <- mode(Dhs_data1$Mal_Res_Rapid)
+
+
+mode<-function(x)(names(sort(table(x), decreasing = TRUE))[1])
+Dhs_data1$Mal_Final[is.na(Dhs_data1$Mal_Final)] <- mode(Dhs_data1$Mal_Final)
+
+
+mode<-function(x)(names(sort(table(x), decreasing = TRUE))[1])
+Dhs_data1$Brand_net[is.na(Dhs_data1$Brand_net)] <- mode(Dhs_data1$Brand_net)
+
+
+mode<-function(x)(names(sort(table(x), decreasing = TRUE))[1])
+Dhs_data1$Net_observed[is.na(Dhs_data1$Net_observed)] <- mode(Dhs_data1$Net_observed)
+
+
+mode<-function(x)names(sort(table(x), decreasing = TRUE))[1]
+Dhs_data1$Ins_Treat_N[is.na(Dhs_data1$Ins_Treat_N)] <- mode(Dhs_data1$Ins_Treat_N)
+
+
+mode<-function(x)(names(sort(table(x), decreasing = TRUE))[1])
+Dhs_data1$Ob_net_Antenatal[is.na(Dhs_data1$Ob_net_Antenatal)] <- mode(Dhs_data1$Ob_net_Antenatal)
+
+
+mode<-function(x)(names(sort(table(x), decreasing = TRUE))[1])
+Dhs_data1$Mal_Res_Blood[is.na(Dhs_data1$Mal_Res_Blood)] <- mode(Dhs_data1$Mal_Res_Blood)
+
+
+Dhs_data1$Net_Mon_Old_Original <- Dhs_data1$Net_Mon_Old  
+Dhs_data1$Net_Mon_Old <- (as.character(Dhs_data1$Months_Ago)) 
+
+
+mode<-function(x)(names(sort(table(x), decreasing = TRUE))[1])
+Dhs_data1$Months_Ago[is.na(Dhs_data1$Months_Ago)] <- mode(Dhs_data1$Months_Ago)
+
+mode<-function(x)(names(sort(table(x), decreasing = TRUE))[1])
+Dhs_data1$Malaria_measurement[is.na(Dhs_data1$Malaria_measurement)] <- mode(Dhs_data1$Malaria_measurement)
+
+mode<-function(x)(names(sort(table(x), decreasing = TRUE))[1])
+Dhs_data1$Blood_smear_test[is.na(Dhs_data1$Blood_smear_test)] <- mode(Dhs_data1$Blood_smear_test)
+
+mode<-function(x)(names(sort(table(x), decreasing = TRUE))[1])
+Dhs_data1$`Malaria _rapid_test`[is.na(Dhs_data1$`Malaria _rapid_test`)] <- mode(Dhs_data1$`Malaria _rapid_test`)
+
+
+# your code
+```
+
+
+3. Create new variables
+
+>a. Create variable called "Old Mosquito" variable HML4 (Months ago the net was obtained). The created variable must binary with 1 when mosquito is more than 24 months old. 
+>b. Create Variable "Average District altitude". Create this variable by averaging cluster altitude in each district. We have three variables HV001= "Cluster number", SHDISTRICT = "District (geographic area)" and HV040 = "Cluster altitude in meters". Filter out clusters in each district, do `mean` of cluster altitude in that district. 
+
+```{r echo=FALSE}
+# create new variable "old mosquitoes"
+Dhs_data1$Old_Mosquito <- ifelse(Dhs_data1$Months_Ago > 24, 1, 0)
+```
+
+
+```{r echo=FALSE}
+library("dplyr")
+# To ensure no issues with haven_labelled variables and calculate district-level altitude:
+Dhs_data1 <- Dhs_data1 %>%
+  mutate(
+    Distr = as.character(District),                 
+    `Cl_Altitude_ M` = as.numeric(`Cl_Altitude_ M`) 
+  ) %>%
+  group_by(Distr) %>%
+  mutate(
+    Average_District_Altitude = mean(`Cl_Altitude_ M`) 
+  ) %>%
+  ungroup()
+
+Dhs_data1
+```
+
+
+
+
+## Data visualizations: 
+
+Produce visualization of your choice. At least each of these
+- Bar plot
+```{r echo=FALSE}
+# your code
+# Get the frequency count of each level of Region
+# Calculate the count of households by region
+count <- table(Dhs_data1$Region)
+# Create the bar plot
+barplot(count, 
+        names.arg = names(count),        
+        col = "lightblue",               
+        main = "Distribution of Households by Region",  
+        xlab = "Region",                 
+        ylab = "Frequency",                  
+        cex.names = 0.6)                 
+                 
+```
+
+```{r}
+library(dplyr)
+
+# Summarize data by Region and Blood Smear Test
+DHS_summary <- Dhs_data1 %>%
+  group_by(Region, Educ_level) %>%
+  summarize(Count = n(), .groups = "drop") # Use n() for row count if 'Count' column is absent
+
+
+```
+
+
+```{r}
+library(ggplot2)
+
+# Barplot
+ggplot(DHS_summary, aes(x = Region, y = Count, fill = Educ_level)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "Blood Smear Test Results by Region",
+    x = "Region",
+    y = "Count",
+    fill = "Educ_level"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5), # Center the title
+    legend.position = "top"                # Place legend at the top
+  )
+
+```
+
+
+
+
+
+
+
+
+- Pie plot
+```{r echo=FALSE}
+# your code
+# Create frequency table for regions
+count <- table(Dhs_data1$Educ_level) 
+
+percentages <- round(100 * count / sum(count), 1)  
+
+
+labels <- paste(names(count), "(", percentages, "%)", sep = "")
+
+# Create pie chart with percentages in labels
+pie(count, 
+    labels = labels,  
+    col = rainbow(length(count)),  
+    main = "Education Level  Distribution",  
+    cex = 0.6)  
+
+```
+
+- Histogram
+```{r echo=FALSE}
+# your code
+
+# histogram on continous data
+
+Dhs_data1$Age <- gsub("[^0-9.]", "", Dhs_data1$Age)  
+age_numeric <- as.numeric(Dhs_data1$Age)            
+age_numeric <- na.omit(age_numeric)                 
+
+# Create the histogram
+hist(age_numeric, 
+     freq = FALSE,        
+     main = "Histogram of Age",  
+     xlab = "Age",        
+     col = "darkblue",    
+     border = "black")    
+
+
+```
+
+- Boxplot
+```{r echo=FALSE}
+boxplot(Dhs_data1$`Cl_Altitude_ M`, data = data,
+        main = "Boxplot of Values by Cluster Altitude",  # Title
+        xlab = "Group",  # X-axis label
+        ylab = "Values",  # Y-axis label
+        col = c("skyblue", "pink", "lightgreen"))  # Colors for boxes
+```
+
+
+
+
+```{r echo=FALSE}
+# Assuming 'Cluster_Altitude' is the column containing altitude data
+Q1 <- quantile(Dhs_data1$`Cl_Altitude_ M`, 0.25, na.rm = TRUE) # 1st quartile
+Q3 <- quantile(Dhs_data1$`Cl_Altitude_ M`, 0.75, na.rm = TRUE) # 3rd quartile
+IQR <- Q3 - Q1                                                # Interquartile range
+
+# Define outlier boundaries
+lower_bound <- Q1 - 1.5 * IQR
+upper_bound <- Q3 + 1.5 * IQR
+
+```
+
+
+
+```{r echo=FALSE}
+Dhs_data_filtered <- Dhs_data1[
+    Dhs_data1$`Cl_Altitude_ M` >= lower_bound & 
+   Dhs_data1$`Cl_Altitude_ M`<= upper_bound, 
+]
+
+```
+
+
+
+```{r echo=FALSE}
+
+# After filtering
+boxplot(Dhs_data_filtered$`Cl_Altitude_ M`, 
+        main = "Boxplot of Values by Cluster Altitude\nAfter Removing Outliers",
+        col="skyblue")
+
+```
+
+
+
+
+
+
+
+## Statistical analysis
+
+### Descriptive statistics
+
+1. Use Variable "HML33" to filter out people who had Malaria measurement. 
+```{r echo=FALSE}
+# your code
+tested_positive <- Dhs_data1[Dhs_data1$Malaria_measurement == "Measured",]
+```
+
+2. Calculate Malaria [Prevalence](https://dhsprogram.com/data/Guide-to-DHS-Statistics/Prevalence_of_Malaria_in_Children.htm) for both "Blood Smear" and "Rapid Test"
+```{r echo=FALSE}
+# your code
+# Calculate prevalence for Blood Smear
+blood_smear_total<-length(Dhs_data1$Blood_smear_test)
+blood_smear_positive <- sum(Dhs_data1$Blood_smear_test == "Positive")  
+blood_smear_prevalence <- (blood_smear_positive / blood_smear_total) * 100  
+
+# Calculate prevalence for Rapid Test
+rapid_test_total<-length(Dhs_data1$`Malaria _rapid_test`)
+rapid_test_positive <- sum(Dhs_data1$`Malaria _rapid_test` == "Positive")  
+rapid_test_prevalence <- (rapid_test_positive / rapid_test_total) * 100  
+
+
+cat("Blood Smear Prevalence (%):", blood_smear_prevalence, "\n")
+cat("Rapid Test Prevalence (%):", rapid_test_prevalence, "\n")
+
+```
+
+3. Aggregate Prevalence at district Level (Blood smear test)
+```{r echo=FALSE}
+# your code
+library(dplyr)
+
+District_prevelence<-Dhs_data1%>% 
+  group_by(District) %>% 
+  summarize(
+    total=n(),
+    positive_cases = sum(Blood_smear_test == "Positive", na.rm = TRUE),
+    prevalence = round((positive_cases/total)*100,3)
+  )
+District_prevelence
+```
+
+Prevalence at district Level (Malaria rapid test)
+```{r echo=FALSE}
+library(dplyr)
+
+District_prevelence<-Dhs_data1%>% 
+  group_by(District) %>% 
+  summarize(
+    total=n(),
+    positive_cases = sum(`Malaria _rapid_test` == "Positive", na.rm = TRUE),
+    prevalence = round((positive_cases/total)*100,3)
+  )
+District_prevelence
+```
+
+
+
+### Analytical Analysis
+1. Compare the prevalence in both tests and state if they are different.
+
+***Hint:*** Check `?` the documentations for `t.test` and `aov`.
+```{r echo=FALSE}
+# your code
+# Total counts for both tests
+# Calculate prevalence rates (as proportions)
+blood_smear_rate <- Dhs_data1$Blood_smear_test == "Positive"
+rapid_test_rate <- Dhs_data1$`Malaria _rapid_test` == "Positive"
+
+
+# Perform an independent t-test
+t_test <- t.test(blood_smear_rate, rapid_test_rate)
+
+# Print Results
+cat("T-Test Results:\n")
+print(t_test)
+
+# Interpretation
+if (t_test$p.value < 0.05) {
+  cat("The mean prevalence rates are significantly different (p-value:", t_test$p.value, ").\n")
+} else {
+  cat("The mean prevalence rates are not significantly different (p-value:", t_test$p.value, ").\n")
+}
+
+```
+The mean prevalence rate for rapid tests is significantly higher than that for blood smear tests. The difference is statistically significant, with a very small p-value (5.579×10−135.579 \times 10^{-13}5.579×10−13), meaning this result is unlikely to have occurred by chance.The observed difference in means (−0.00206-0.00206−0.00206) suggests that the blood smear test consistently detects malaria at a lower rate than the rapid
+
+
+### Bonus
+
+2. Using a statistical model of your choice, determine if there is a relationship between malaria prevalence in a district and its average altitude. 
+```{r echo=FALSE}
+# your code
+# Aggregate malaria prevalence and altitude by district
+District_prevalence <- Dhs_data1 %>%
+  group_by(District) %>%
+  summarise(
+    Malaria_Prevalence = mean(Blood_smear_test == "Positive", na.rm = TRUE) * 100,
+    Average_Altitude = mean(`Cl_Altitude_ M`, na.rm = TRUE)
+  )
+District_prevalence
+```
+
+
+
+
+
+```{r echo=FALSE}
+# Fit the linear regression model
+model <- lm(Malaria_Prevalence ~ Average_Altitude, data = District_prevalence)
+
+
+summary(model)
+```
+
+
+```{r echo=FALSE}
+# Scatterplot with regression line
+plot(District_prevalence$Average_Altitude, District_prevalence$Malaria_Prevalence,
+     xlab = "Average Altitude (meters)", ylab = "Malaria Prevalence (%)",
+     main = "Malaria Prevalence vs. Average Altitude")
+abline(model, col = "red", lwd = 2)  # Add regression line
+
+```
+The regression results indicate no significant relationship between altitude and malaria prevalence at the district level. 
+While the coefficient for altitude is negative, it is not statistically significant, and the model explains very little of the variability in malaria prevalence 
+
+
+
+
+
+
+
+
+
+
+
+

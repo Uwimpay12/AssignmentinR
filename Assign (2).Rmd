@@ -1,0 +1,87 @@
+---
+title: "Assignment 1"
+author: "Bernard Ndayizeye"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+# Import dataset into R
+survey_data <- read.csv("data.csv")
+```
+
+```{r}
+statistics <- grepl("statistics", survey_data$Background, ignore.case = TRUE)
+survey_data$Background[statistics] <- "Applied Statistics"
+```
+
+
+```{r}
+data <- grepl("data sc", survey_data$Background, ignore.case = TRUE)
+survey_data$Background[data] <- "Data Science"
+```
+
+
+```{r}
+design <- grepl("design", survey_data$Background, ignore.case = TRUE)
+survey_data$Background[design] <- "Industrial Art and Design"
+```
+
+
+```{r}
+info <- grepl("information sys", survey_data$Background, ignore.case = TRUE)
+survey_data$Background[info] <- "Information Systems"
+```
+
+
+```{r}
+civ <- grepl("civil eng", survey_data$Background, ignore.case = TRUE)
+survey_data$Background[civ] <- "Civil Engineering"
+```
+
+
+```{r}
+travel <- grepl("tourism", survey_data$Background, ignore.case = TRUE)
+survey_data$Background[travel] <- "Travel and Tourism Management"
+```
+
+
+```{r}
+quant <- grepl("survey", survey_data$Background, ignore.case = TRUE)
+survey_data$Background[quant] <- "Quantity Surveying"
+```
+
+
+```{r}
+demo <- grepl("demo", survey_data$Background, ignore.case = TRUE)
+survey_data$Background[demo] <- "Demography"
+```
+
+```{r}
+it <- grepl("information tech", survey_data$Background, ignore.case = TRUE)
+survey_data$Background[it] <- "Information Technology"
+```
+
+
+```{r}
+data_table <- table(survey_data$Background)
+data_summary <- as.data.frame(data_table)
+colnames(data_summary) <- c("Field","Count")
+data_summary$Percentage <- round(data_summary$Count/sum(data_summary$Count) * 100, 2)
+data_summary <- data_summary[order(-data_summary$Count),]
+
+```
+
+
+```{r}
+pie(data_summary$Count, labels = paste(data_summary$Field," (",data_summary$Percentage, "%)", sep = ""), main = "Distrution of Background", cex= 0.8, col = rainbow(length(data_summary$Field)))
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
